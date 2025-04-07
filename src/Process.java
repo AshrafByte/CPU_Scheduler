@@ -19,6 +19,10 @@ public final class Process {
         this.state = ProcessState.NEW;
     }
 
+    public Process(String name, int arrivalTime, int burstTime) {
+        this(name,arrivalTime,burstTime,0);
+    }
+
 
     public void execute(int timeUnits) {
         remainingTime = Math.max(0, remainingTime - timeUnits);

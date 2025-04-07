@@ -18,6 +18,13 @@ public final class Simulator
         this.processes = new ArrayList<>(Objects.requireNonNull(processes));
     }
 
+    public synchronized void addProcess(Process process)
+    {
+        if (!isRunning) return;
+        addToReadyQueue(process);
+        processes.add(process);
+    }
+
     public void start()
     {
         isRunning = true;
@@ -36,6 +43,11 @@ public final class Simulator
         isRunning = false;
     }
 
+    private boolean allProcessesTerminated()
+    {
+        return processes.stream()
+                .allMatch(p -> p.getState() == Process.ProcessState.TERMINATED);
+    }
 
     private void tick()
     {
@@ -56,25 +68,6 @@ public final class Simulator
         timer++;
     }
 
-    public synchronized void addProcess(Process process)
-    {
-        if (!isRunning) return;
-        addToReadyQueue(process);
-        processes.add(process);
-    }
-
-    private boolean allProcessesTerminated()
-    {
-        return processes.stream()
-                .allMatch(p -> p.getState() == Process.ProcessState.TERMINATED);
-    }
-
-    private void addToReadyQueue(Process process)
-    {
-        process.setReady();
-        scheduler.addProcess(process);
-    }
-
     private void checkNewArrivals()
     {
         Predicate<Process> isArrived = p ->
@@ -86,4 +79,12 @@ public final class Simulator
                 .forEach(this::addToReadyQueue);
 
     }
+
+    private void addToReadyQueue(Process process)
+    {
+        process.setReady();
+        scheduler.addProcess(process);
+    }
+
+
 }

@@ -8,13 +8,12 @@ public class Main
         // Create processes
         List<Process> processes = new ArrayList<>();
 
-        processes.add(new Process("P1", 3, 3, 0));
-        processes.add(new Process("P2", 3, 3, 0));
-        processes.add(new Process("P3", 3, 3, 0));
+        processes.add(new Process("P1", 0, 4, 0));
+        processes.add(new Process("P2", 1, 1, 2));
 
         // Initialize components
         GanttChart chart = new GanttChart();
-        Scheduler scheduler = new RR(2); // Round Robin with quantum=2
+        Scheduler scheduler = new Priority(false); // Round Robin with quantum=2
         Simulator simulator = new Simulator(processes, scheduler, chart);
 
         simulator.start();
