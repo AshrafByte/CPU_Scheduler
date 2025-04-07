@@ -1,14 +1,16 @@
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.Queue;
 
 public abstract class Scheduler
 {
-    PriorityQueue<Process> readyQueue;
+    protected Queue<Process> readyQueue;
+    protected Process currentProcess;
 
     public void addProcess(Process process)
     {
-        if (readyQueue != null)
+        if ( readyQueue != null && process.getState() == Process.ProcessState.READY)
             readyQueue.add(process);
+
     }
 
     public abstract void initialize(List<Process> processes);

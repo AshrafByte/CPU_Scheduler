@@ -1,8 +1,4 @@
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Results {
@@ -12,27 +8,24 @@ public final class Results {
         calculateMetrics(ganttChart);
     }
 
-    private void calculateMetrics(GanttChart ganttChart)
-    {
-        // Group entries by process and find their last execution
-        Map<Process, Optional<GanttEntry>> lastExecutions = ganttChart.getEntries().stream()
-                .filter(entry -> entry.getProcess() != null) // Skip idle entries
-                .collect(Collectors.groupingBy(
-                        GanttEntry::getProcess,
-                        Collectors.maxBy(Comparator.comparingLong(GanttEntry::getEndTime))
-                ));
+    private void calculateMetrics(GanttChart ganttChart) {
+        Map<Process, Integer> completionTimes = new HashMap<>();
 
-        // Calculate metrics for each process
-        lastExecutions.forEach((process, lastEntryOpt) -> {
-            if (lastEntryOpt.isPresent())
-            {
-                GanttEntry lastEntry = lastEntryOpt.get();
-                int finishTime = (int) lastEntry.getEndTime();
-                int turnaround = finishTime - process.getArrivalTime();
-                int waiting = turnaround - process.getBurstTime();
-                processMetrics.add(new ProcessMetrics(process, turnaround, waiting));
+        // Find when each process completed
+        for (GanttEntry entry : ganttChart.getEntries()) {
+            Process p = entry.getProcess();
+            if (p != null && p.getState() == Process.ProcessState.TERMINATED) {
+                completionTimes.put(p, (int)entry.getEndTime());
             }
-        });
+        }
+
+        // Calculate metrics
+        for (Process p : completionTimes.keySet()) {
+            int finish = completionTimes.get(p);
+            int turnaround = finish - p.getArrivalTime();
+            int waiting = turnaround - p.getBurstTime();
+            processMetrics.add(new ProcessMetrics(p, turnaround, waiting));
+        }
     }
 
     public List<ProcessMetrics> getAllMetrics() {

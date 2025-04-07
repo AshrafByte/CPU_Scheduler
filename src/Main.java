@@ -2,22 +2,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException
+    {
         // Create processes
         List<Process> processes = new ArrayList<>();
 
-        processes.add(new Process(1, "P1", 20, 5, 0));
-        processes.add(new Process(2, "P2", 0, 3, 0));
-        processes.add(new Process(3, "P3", 10, 8, 0));
+        processes.add(new Process(1, "P1", 0, 3, 0));
+        processes.add(new Process(2, "P2", 2, 3, 0));
+        processes.add(new Process(3, "P3", 6, 3, 0));
+
 
         // Initialize components
         GanttChart chart = new GanttChart();
         Scheduler scheduler = new RR(2); // Round Robin with quantum=2
-        Simulator simulator = new Simulator(processes,scheduler, chart);
+        Simulator simulator = new Simulator(processes, scheduler, chart);
 
 
-        // Run simulation
-        simulator.simulate();
+        simulator.start();
+
 
         // Get results
         Results results = new Results(chart);

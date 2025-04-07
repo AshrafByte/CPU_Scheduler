@@ -1,46 +1,115 @@
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Predicate;
 
-public final class Simulator {
+public final class Simulator implements AutoCloseable
+{
     private final Scheduler scheduler;
     private final GanttChart ganttChart;
     private final List<Process> processes;
+    private int timer;
+    private final ScheduledExecutorService executor;
+    private ScheduledFuture<?> simulationFuture;
+    private volatile boolean isRunning;
 
-    public Simulator(List<Process> processes,Scheduler scheduler, GanttChart ganttChart) {
-        this.scheduler = scheduler;
-        this.ganttChart = ganttChart;
-        this.processes = processes;
+    public Simulator(List<Process> processes, Scheduler scheduler, GanttChart ganttChart)
+    {
+        timer = 0;
+        isRunning = false;
+        this.scheduler = Objects.requireNonNull(scheduler);
+        this.ganttChart = Objects.requireNonNull(ganttChart);
+        this.processes = new ArrayList<>(Objects.requireNonNull(processes));
+        this.executor = Executors.newSingleThreadScheduledExecutor(r ->
+        {
+            Thread t = new Thread(r, "Simulator-Thread");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
-    public void simulate()
+    public void start()
     {
-        processes.sort(Comparator.comparingInt(Process::getArrivalTime));
-        scheduler.initialize(processes);
-        int currentTime = 0;
-
-        while (!allProcessesTerminated(processes)) {
-            Process next = scheduler.decideNextProcess();
-
-            if (next != null)
+        isRunning = true;
+        while (!allProcessesTerminated())
+        {
+            tick();
+            try
             {
-                ganttChart.addEntry(next, currentTime, currentTime + 1);
-                next.execute(1);
-                scheduler.onProcessCompleted(next);
+                Thread.sleep(1000); // Control tick rate manually
             }
-            else
-                ganttChart.addIdleEntry(currentTime, currentTime + 1);
-
-            currentTime++;
+            catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
+        isRunning = false;
     }
 
-    public void addLiveProcess(Process process)
+
+    @Override
+    public synchronized void close()
     {
+        isRunning = false;
+        executor.shutdown();
+    }
+
+    private void tick()
+    {
+        if (!isRunning) return;
+
+        checkNewArrivals();
+
+        Process next = scheduler.decideNextProcess();
+        if (next != null)
+        {
+            ganttChart.addEntry(next, timer, timer + 1);
+            next.execute(1);
+            scheduler.onProcessCompleted(next);
+        }
+        else
+            ganttChart.addIdleEntry(timer, timer + 1);
+
+        timer++;
+    }
+
+    public synchronized void addProcess(Process process)
+    {
+        if (!isRunning) return;
+        process.setReady();
+
+        processes.add(process);
         scheduler.addProcess(process);
     }
 
-    private boolean allProcessesTerminated(List<Process> processes) {
+    private boolean allProcessesTerminated()
+    {
+
+
         return processes.stream()
                 .allMatch(p -> p.getState() == Process.ProcessState.TERMINATED);
+
     }
+
+    private void addToReadyQueue(Process process)
+    {
+        process.setReady();
+        scheduler.addProcess(process);
+    }
+
+    private void checkNewArrivals()
+    {
+        Predicate<Process> isArrived = p ->
+                p.getArrivalTime() <= timer &&
+                        p.getState() == Process.ProcessState.NEW;
+
+        for (Process process : processes)
+        {
+            if (isArrived.test(process))
+            {
+                addToReadyQueue(process);
+            }
+        }
+    }
+
+
 }
