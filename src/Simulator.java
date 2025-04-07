@@ -1,5 +1,4 @@
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.Predicate;
 
 public final class Simulator

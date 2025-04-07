@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Main
 {
-    public static void main(String[] args) throws InterruptedException
+    public static void main(String[] args)
     {
         // Create processes
         List<Process> processes = new ArrayList<>();
