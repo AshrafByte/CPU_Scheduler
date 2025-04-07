@@ -14,7 +14,9 @@ public final class GanttEntry {
     public long getEndTime() { return endTime; }
 
     @Override
-    public String toString() {
-        return String.format("[%s %d-%d]", process.getName(), startTime, endTime);
+    public String toString()
+    {
+        String processName = process == null ? "IDLE" : process.getName();
+        return String.format("[%s %d-%d]", processName, startTime, endTime);
     }
 }

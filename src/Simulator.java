@@ -2,14 +2,12 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Predicate;
 
-public final class Simulator implements AutoCloseable
+public final class Simulator
 {
     private final Scheduler scheduler;
     private final GanttChart ganttChart;
     private final List<Process> processes;
     private int timer;
-    private final ScheduledExecutorService executor;
-    private ScheduledFuture<?> simulationFuture;
     private volatile boolean isRunning;
 
     public Simulator(List<Process> processes, Scheduler scheduler, GanttChart ganttChart)
@@ -19,12 +17,6 @@ public final class Simulator implements AutoCloseable
         this.scheduler = Objects.requireNonNull(scheduler);
         this.ganttChart = Objects.requireNonNull(ganttChart);
         this.processes = new ArrayList<>(Objects.requireNonNull(processes));
-        this.executor = Executors.newSingleThreadScheduledExecutor(r ->
-        {
-            Thread t = new Thread(r, "Simulator-Thread");
-            t.setDaemon(true);
-            return t;
-        });
     }
 
     public void start()
@@ -45,13 +37,6 @@ public final class Simulator implements AutoCloseable
         isRunning = false;
     }
 
-
-    @Override
-    public synchronized void close()
-    {
-        isRunning = false;
-        executor.shutdown();
-    }
 
     private void tick()
     {
@@ -75,19 +60,14 @@ public final class Simulator implements AutoCloseable
     public synchronized void addProcess(Process process)
     {
         if (!isRunning) return;
-        process.setReady();
-
+        addToReadyQueue(process);
         processes.add(process);
-        scheduler.addProcess(process);
     }
 
     private boolean allProcessesTerminated()
     {
-
-
         return processes.stream()
                 .allMatch(p -> p.getState() == Process.ProcessState.TERMINATED);
-
     }
 
     private void addToReadyQueue(Process process)
@@ -102,14 +82,9 @@ public final class Simulator implements AutoCloseable
                 p.getArrivalTime() <= timer &&
                         p.getState() == Process.ProcessState.NEW;
 
-        for (Process process : processes)
-        {
-            if (isArrived.test(process))
-            {
-                addToReadyQueue(process);
-            }
-        }
+        processes.stream()
+                .filter(isArrived)
+                .forEach(this::addToReadyQueue);
+
     }
-
-
 }

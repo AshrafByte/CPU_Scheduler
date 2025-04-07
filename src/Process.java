@@ -1,4 +1,5 @@
 public final class Process {
+    private static int counter = 0 ;
     private final int pid;
     private final String name;
     private final int arrivalTime;
@@ -8,8 +9,8 @@ public final class Process {
     public enum ProcessState {NEW, READY, RUNNING, TERMINATED}
     private ProcessState state;
 
-    public Process(int pid, String name, int arrivalTime, int burstTime, int priority) {
-        this.pid = pid;
+    public Process(String name, int arrivalTime, int burstTime, int priority) {
+        this.pid = ++counter;
         this.name = name;
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
@@ -30,6 +31,10 @@ public final class Process {
         if (state == ProcessState.RUNNING && remainingTime > 0) {
             state = ProcessState.READY;
         }
+    }
+
+    public static void resetCounter() {
+        counter = 1;
     }
 
     // Getters
