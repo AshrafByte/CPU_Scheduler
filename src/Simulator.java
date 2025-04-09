@@ -20,27 +20,35 @@ public final class Simulator
 
     public synchronized void addProcess(Process process)
     {
-        if (!isRunning) return;
-        addToReadyQueue(process);
+        if (isRunning)
+            addToReadyQueue(process);
         processes.add(process);
     }
 
-    public void start()
+    public void runLive() {
+        run(true);
+    }
+
+    public void runStatic() {
+        run(false);
+    }
+
+    /// //////////////////////////////////////////////////////////////////////////////////////////
+    private void run(boolean live)
     {
         isRunning = true;
         while (!allProcessesTerminated())
         {
             tick();
-            try
-            {
-                Thread.sleep(1000); // Control tick rate manually
-            }
-            catch (InterruptedException e)
-            {
-                throw new RuntimeException(e);
-            }
+            if (live) sleep(1000);
         }
         isRunning = false;
+    }
+
+    private void sleep(int timeInMs)
+    {
+        try {Thread.sleep(timeInMs);} // Control tick rate manually
+        catch (InterruptedException e) {throw new RuntimeException(e);}
     }
 
     private boolean allProcessesTerminated()
@@ -82,6 +90,10 @@ public final class Simulator
 
     private void addToReadyQueue(Process process)
     {
+
+        if (process.getState() != Process.ProcessState.NEW)
+            return;
+
         process.setReady();
         scheduler.addProcess(process);
     }

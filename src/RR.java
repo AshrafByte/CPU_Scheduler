@@ -11,13 +11,6 @@ public class RR extends Scheduler
         this.timeQuantum = timeQuantum;
     }
 
-    @Override
-    public void initialize(List<Process> processes)
-    {
-        processes.stream()
-                .sorted(Comparator.comparingInt(Process::getArrivalTime))
-                .forEach(this::addProcess);
-    }
 
     @Override
     public Process decideNextProcess()

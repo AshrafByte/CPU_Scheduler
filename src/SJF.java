@@ -1,5 +1,4 @@
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -25,15 +24,6 @@ public class SJF extends Scheduler
 
         return new PriorityQueue<>(comparator);
 
-    }
-    @Override
-    public void initialize(List<Process> processes)
-    {
-        processes.stream()
-                .sorted(Comparator
-                        .comparingInt(Process::getArrivalTime)
-                        .thenComparingInt(Process::getBurstTime))
-                .forEach(this::addProcess);
     }
 
     @Override

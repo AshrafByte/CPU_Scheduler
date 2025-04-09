@@ -16,7 +16,8 @@ public class Main
         Scheduler scheduler = new Priority(false); // Round Robin with quantum=2
         Simulator simulator = new Simulator(processes, scheduler, chart);
 
-        simulator.start();
+        simulator.runStatic();
+        simulator.runLive();
 
         // Get results
         Results results = new Results(chart);

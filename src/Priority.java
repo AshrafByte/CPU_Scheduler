@@ -17,16 +17,6 @@ public class Priority extends Scheduler
 
 
     @Override
-    public void initialize(List<Process> processes)
-    {
-        processes.stream()
-                .sorted(Comparator
-                        .comparingInt(Process::getArrivalTime)
-                        .thenComparingInt(Process::getPriority))
-                .forEach(this::addProcess);
-    }
-
-    @Override
     public Process decideNextProcess()
     {
         if (preemptive)
