@@ -1,3 +1,10 @@
+package scheduler;
+
+import model.GanttChart;
+import model.GanttEntry;
+import model.ProcessMetrics;
+import model.Process;
+
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -16,7 +23,7 @@ public final class Results
         // Define the predicate to check if the process is terminated
         Predicate<GanttEntry> isTerminatedProcess = entry ->
                 entry.getProcess() != null
-                        && entry.getProcess().getState() == Process.ProcessState.TERMINATED;
+                        && entry.getProcess().isInState(Process.State.TERMINATED);
 
         // Using streams to filter, map, and collect the results
         Map<Process, Integer> completionTimes = ganttChart.getEntries().stream()
@@ -34,9 +41,9 @@ public final class Results
         The map would look like:
         completionTimes =
         {
-            Process{id=1, name="Process A"} -> 50,
-            Process{id=2, name="Process B"} -> 70,
-            Process{id=3, name="Process C"} -> 45
+            model.Process{id=1, name="model.Process A"} -> 50,
+            model.Process{id=2, name="model.Process B"} -> 70,
+            model.Process{id=3, name="model.Process C"} -> 45
          }
         */
     }
@@ -64,7 +71,7 @@ public final class Results
         }
 
 
-        private void addProcessMetrics (Process process,int finish)
+        private void addProcessMetrics (Process process, int finish)
         {
             int turnaround = finish - process.getArrivalTime();
             int waiting = turnaround - process.getBurstTime();

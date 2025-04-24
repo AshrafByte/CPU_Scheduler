@@ -1,8 +1,16 @@
+package scheduler;
+
+import model.GanttChart;
+
 import java.util.*;
 import java.util.function.Predicate;
+import model.Process;
 
 public final class Simulator
 {
+    private final int sleepTimeMs = 1000;
+    final int TICK_DURATION = 1;
+
     private final Scheduler scheduler;
     private final GanttChart ganttChart;
     private final List<Process> processes;
@@ -40,21 +48,21 @@ public final class Simulator
         while (!allProcessesTerminated())
         {
             tick();
-            if (live) sleep(1000);
+            if (live) sleep();
         }
         isRunning = false;
     }
 
-    private void sleep(int timeInMs)
+    private void sleep()
     {
-        try {Thread.sleep(timeInMs);} // Control tick rate manually
+        try {Thread.sleep(sleepTimeMs);} // Control tick rate manually
         catch (InterruptedException e) {throw new RuntimeException(e);}
     }
 
     private boolean allProcessesTerminated()
     {
         return processes.stream()
-                .allMatch(p -> p.getState() == Process.ProcessState.TERMINATED);
+                .allMatch(p -> p.isInState(Process.State.TERMINATED));
     }
 
     private void tick()
@@ -66,21 +74,21 @@ public final class Simulator
         Process next = scheduler.decideNextProcess();
         if (next != null)
         {
-            ganttChart.addEntry(next, timer, timer + 1);
-            next.execute(1);
+            ganttChart.addEntry(next, timer, timer + TICK_DURATION);
+            next.execute(TICK_DURATION);
             scheduler.onProcessCompleted(next);
         }
         else
-            ganttChart.addIdleEntry(timer, timer + 1);
+            ganttChart.addIdleEntry(timer, timer + TICK_DURATION);
 
-        timer++;
+        timer += TICK_DURATION;
     }
 
     private void checkNewArrivals()
     {
         Predicate<Process> isArrived = p ->
                 p.getArrivalTime() <= timer &&
-                        p.getState() == Process.ProcessState.NEW;
+                        p.isInState(Process.State.NEW);
 
         processes.stream()
                 .filter(isArrived)
@@ -91,10 +99,10 @@ public final class Simulator
     private void addToReadyQueue(Process process)
     {
 
-        if (process.getState() != Process.ProcessState.NEW)
+        if (!process.isInState(Process.State.NEW))
             return;
 
-        process.setReady();
+        process.transitionTo(Process.State.READY);
         scheduler.addProcess(process);
     }
 

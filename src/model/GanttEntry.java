@@ -1,3 +1,5 @@
+package model;
+
 public final class GanttEntry {
     private final Process process;
     private final long startTime;

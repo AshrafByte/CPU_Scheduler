@@ -1,10 +1,14 @@
+package scheduler.algorithms;
+
+import scheduler.Scheduler;
+import model.Process;
 import java.util.LinkedList;
 
 public class FCFS extends Scheduler
 {
     public FCFS()
     {
-        this.readyQueue = new LinkedList<>();
+        super(new LinkedList<>());
     }
 
     @Override
@@ -17,10 +21,4 @@ public class FCFS extends Scheduler
         return currentProcess;
     }
 
-    @Override
-    public void onProcessCompleted(Process process)
-    {
-        if (process.getState() == Process.ProcessState.TERMINATED)
-            currentProcess = null;
-    }
 }

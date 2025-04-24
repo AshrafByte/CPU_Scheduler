@@ -1,3 +1,7 @@
+package scheduler.algorithms;
+import model.Process;
+import scheduler.Scheduler;
+
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
@@ -7,11 +11,15 @@ public class Priority extends Scheduler
 
     public Priority(boolean preemptive)
     {
+        super(new PriorityQueue<>(buildComparator()));
         this.preemptive = preemptive;
-        this.readyQueue = new PriorityQueue<>(Comparator
-                .comparingInt(Process::getPriority).reversed()
+    }
+
+    private static Comparator<Process> buildComparator() {
+        return Comparator
+                .comparingInt(Process::getPriority)
                 .thenComparingInt(Process::getArrivalTime)
-                .thenComparingInt(Process::getPid));
+                .thenComparingInt(Process::getPid);
     }
 
 
@@ -37,10 +45,5 @@ public class Priority extends Scheduler
         return currentProcess;
     }
 
-    @Override
-    public void onProcessCompleted(Process process)
-    {
-        if (process.getState() == Process.ProcessState.TERMINATED)
-            currentProcess = null;
-    }
+
 }

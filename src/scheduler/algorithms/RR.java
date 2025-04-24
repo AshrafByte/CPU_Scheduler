@@ -1,4 +1,8 @@
-import java.util.*;
+package scheduler.algorithms;
+
+import scheduler.Scheduler;
+import model.Process;
+import java.util.LinkedList;
 
 public class RR extends Scheduler
 {
@@ -7,7 +11,7 @@ public class RR extends Scheduler
 
     public RR(int timeQuantum)
     {
-        this.readyQueue = new LinkedList<>();
+        super(new LinkedList<>());
         this.timeQuantum = timeQuantum;
     }
 
@@ -37,9 +41,7 @@ public class RR extends Scheduler
     @Override
     public void onProcessCompleted(Process process)
     {
-        if (process.getState() == Process.ProcessState.TERMINATED)
-            currentProcess = null; // Clear current if terminated
-
+        super.onProcessCompleted(process);
         remainingQuantum--;
     }
 }

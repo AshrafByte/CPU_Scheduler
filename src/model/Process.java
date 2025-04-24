@@ -1,4 +1,10 @@
+package model;
+
 public final class Process {
+
+    public enum State {NEW, READY, RUNNING, TERMINATED}
+
+    private State state;
     private static int counter = 0 ;
     private final int pid;
     private final String name;
@@ -6,8 +12,7 @@ public final class Process {
     private final int burstTime;
     private final int priority;
     private int remainingTime;
-    public enum ProcessState {NEW, READY, RUNNING, TERMINATED}
-    private ProcessState state;
+
 
     public Process(String name, int arrivalTime, int burstTime, int priority) {
         this.pid = ++counter;
@@ -16,7 +21,7 @@ public final class Process {
         this.burstTime = burstTime;
         this.priority = priority;
         this.remainingTime = burstTime;
-        this.state = ProcessState.NEW;
+        this.state = State.NEW;
     }
 
     public Process(String name, int arrivalTime, int burstTime) {
@@ -24,32 +29,31 @@ public final class Process {
     }
 
 
-    public void execute(int timeUnits) {
+    public void execute(int timeUnits)
+    {
         remainingTime = Math.max(0, remainingTime - timeUnits);
-        if (remainingTime == 0)
-            state = ProcessState.TERMINATED;
+        if (remainingTime <= 0)
+            transitionTo(State.TERMINATED);
 
     }
 
-    public void preempt() {
-        if (state == ProcessState.RUNNING && remainingTime > 0) {
-            state = ProcessState.READY;
-        }
+    public void preempt()
+    {
+        if (isInState(State.READY) && remainingTime > 0)
+            transitionTo(State.RUNNING);
     }
 
     public static void resetCounter() {
-        counter = 1;
+        counter = 0;
     }
 
-    // Getters
     public int getPid() { return pid; }
     public String getName() { return name; }
     public int getArrivalTime() { return arrivalTime; }
     public int getBurstTime() { return burstTime; }
     public int getPriority() { return priority; }
     public int getRemainingTime() { return remainingTime; }
-    public ProcessState getState() { return state; }
-    public void setRunning() {state = ProcessState.RUNNING;}
-    public void setReady() {state = ProcessState.READY;}
+    public void transitionTo(State newState) {this.state = newState;}
+    public boolean isInState(State stateToCheck) {return this.state == stateToCheck;}
 
 }
